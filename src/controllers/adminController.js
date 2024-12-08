@@ -70,6 +70,34 @@ export const getUserGalleries = async (req, res) => {
 };
 
 
+export const getAllGalleries = async (req, res) => {
+  try {
+      const galleries = await Gallery.findAll({
+          attributes: [
+              'id', 
+              'title', 
+              'description', 
+              'user_id',
+              'image_url',  // Tambahkan image_url di sini
+              'created_at', 
+              'updated_at'
+          ]
+      });
+
+      if (galleries.length === 0) {
+          return res.status(404).json({ message: 'No galleries found' });
+      }
+
+      return res.json(galleries);
+  } catch (error) {
+      console.error('Error fetching galleries:', error);
+      return res.status(500).json({ 
+          message: 'Error fetching galleries', 
+          error: error.message 
+      });
+  }
+};
+
 
 // Menghapus galeri spesifik
 export const deleteGallery = async (req, res) => {
@@ -100,5 +128,32 @@ export const deleteGallery = async (req, res) => {
   } catch (error) {
     console.error('Error deleting gallery:', error);
     return res.status(500).json({ message: 'Error deleting gallery', error: error.message });
+  }
+};
+
+export const deleteGalleryById = async (req, res) => {
+  const { galleryId } = req.params;
+  try {
+    // Cari gallery berdasarkan ID
+    const gallery = await Gallery.findByPk(galleryId);
+
+    // Jika gallery tidak ditemukan
+    if (!gallery) {
+      return res.status(404).json({ message: 'Gallery not found' });
+    }
+
+    // Hapus gallery
+    await gallery.destroy();
+
+    return res.json({ 
+      message: 'Gallery deleted successfully',
+      deletedGalleryId: galleryId 
+    });
+  } catch (error) {
+    console.error('Error deleting gallery:', error);
+    return res.status(500).json({ 
+      message: 'Error deleting gallery', 
+      error: error.message 
+    });
   }
 };
